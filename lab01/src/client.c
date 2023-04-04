@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include "common.h"
 
 #define INPUT_MAX 100
 #define MAX_WORDS 3
@@ -20,53 +21,6 @@ void show_banner() {
   printf("!    por exemplo: funcao arg1 arg2 arg3                         !\n");
   printf("! Digite quit para sair.                                        !\n");
   printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-}
-
-char** split(char *string, const char *delimiter, size_t max_array_size) {
-  char **words = (char**) malloc(sizeof(char*) * max_array_size);
-  char *token = strtok(string, delimiter);
-  int i = 0;
-  while (token != NULL) {
-    if (i < max_array_size) {
-      words[i]= (char*) malloc(sizeof(char) * (strlen(token) + 1));
-      strcpy(words[i], token);
-      i++;
-    } else {
-      int j = max_array_size-1;
-      int remaining = strlen(token);
-      words[j] = (char*) realloc(words[j], sizeof(words[j]) + (sizeof(char) * strlen(token) + 1));
-      strcat(words[j], delimiter);
-      strcat(words[j], token);
-    }
-    token = strtok(NULL, delimiter); // prossegue para prox token
-  }
-  return words;
-}
-
-char* expand(char **str_arr, const char *expander, size_t arr_size) {
-  char *expanded = (char*) malloc(sizeof(str_arr[0])+1);
-  strcpy(expanded, str_arr[0]);
-  for (int i = 1; i < arr_size; i++) {
-    expanded = (char*) realloc(expanded, sizeof(expanded) + sizeof(str_arr[i]) + 1);
-    strcat(expanded, expander);
-    strcat(expanded, str_arr[i]);
-  }
-  return expanded;
-}
-
-int str_in_array(char *str, char **arr, size_t arr_size) {
-  for (int i = 0; i < arr_size; i++)
-    if (strcmp(str, arr[i]) == 0) return 1;
-  return 0;
-}
-
-char** read_from_ui() {
-  char input[INPUT_MAX];
-  printf(">> ");
-  fgets(input, INPUT_MAX, stdin);
-  input[strcspn(input, "\n")] = 0; // remove \n
-  char **words = split(input, " ", MAX_WORDS);
-  return words;
 }
 
 int connect_to_server(const char *serv_addr, const int serv_port) {
@@ -106,7 +60,7 @@ char* post(int sockfd, char *cmd) {
 
 char** get_available_commands(int sockfd) {
   char *listcmds_response = post(sockfd, "listcmds");
-  int n_cmds = atoi(listcmds_response[0]);
+  int n_cmds = atoi(&listcmds_response[0]);
   return split(listcmds_response, " ", n_cmds);
 }
 
@@ -126,12 +80,12 @@ int main() {
 
   char **available_cmds = get_available_commands(sockfd);
   int n_cmds = atoi(available_cmds[0]);
-  available_cmds = available_cmds+1; // slice do primeiro elemento
+  available_cmds = available_cmds+1; // slice do primeiro elemento, que eh n
 
   char **input;
   char *response;
   while (1) {
-    input = read_from_ui();
+    input = read_from_ui(INPUT_MAX, MAX_WORDS);
 
     if (str_in_array(input[0], available_cmds, n_cmds)) {
       response = post(sockfd, expand(input, " ", MAX_WORDS));
