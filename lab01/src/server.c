@@ -12,7 +12,7 @@
 #include "commands.h"
 
 #define MAX_CLIENTS 10
-#define BUFFER_SIZE 512
+#define BUFFER_IN_SIZE 512
 #define SERVER_PORT 9734
 
 int active_sockets[MAX_CLIENTS];
@@ -86,14 +86,17 @@ void *listen_socket(void *arg) {
 
 void *handle_socket_connection(void *arg) {
   int client_sockfd = *(int *) arg;
-  char buffer[BUFFER_SIZE];
-  size_t bytes_received;
-  while((bytes_received = read(client_sockfd, buffer, BUFFER_SIZE)) > 0) {
+  char buffer[BUFFER_IN_SIZE];
+  int n;
+  while (1) {
+    read(client_sockfd, buffer, sizeof(buffer));
     printf("\nMensagem recebida de cliente no socket %d: %s\n", client_sockfd, buffer);
     char *response = commands(buffer);
-    printf("\n RESPONSE : %s\n", response);
+    printf("Resposta: %s\n", response);
     if (response == NULL) break;
-    write(client_sockfd, response, sizeof(response));
+    n = sizeof(response);
+    n = write(client_sockfd, response, sizeof(char) * strlen(response) + 1);
+    free(response);
   }
   disconnect_socket(client_sockfd);
 }

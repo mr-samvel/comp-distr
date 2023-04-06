@@ -21,6 +21,7 @@ char** split(char *string, const char *delimiter, int max_array_size) {
     }
     token = strtok(NULL, delimiter); // prossegue para prox token
   }
+  for (i = 0; i < max_array_size; i++) if (!words[i]) words[i] = NULL;
   return words;
 }
 
@@ -28,6 +29,7 @@ char* expand(char **str_arr, const char *expander, int arr_size) {
   char *expanded = (char*) malloc(sizeof(str_arr[0])+1);
   strcpy(expanded, str_arr[0]);
   for (int i = 1; i < arr_size; i++) {
+    if (!str_arr[i]) break;
     expanded = (char*) realloc(expanded, sizeof(expanded) + sizeof(str_arr[i]) + 1);
     strcat(expanded, expander);
     strcat(expanded, str_arr[i]);

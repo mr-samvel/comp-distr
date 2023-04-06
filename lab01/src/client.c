@@ -38,30 +38,17 @@ int connect_to_server(const char *serv_addr, const int serv_port) {
 }
 
 char* post(int sockfd, char *cmd) {
-  char *buffer = NULL;
-  if (write(sockfd, cmd, sizeof(cmd)) != -1) {
-    int status = 1;
-    int len = 64, bytes_received = 0, cur_size = 0;
-    while (status > 0) {
-      if (bytes_received >= cur_size) {
-        cur_size += len;
-        char *tmp = realloc(buffer, cur_size);
-        if (tmp == NULL) break;
-        buffer = tmp;
-      }
-      status = read(sockfd, buffer+bytes_received, len);
-      bytes_received += status;
-    }
-  } else {
-    printf("Erro ao enviar comando ao servidor.\n");
-  }
-  return buffer;
+  int response_len = sizeof(char) * 1024;
+  char *response = (char*) malloc(response_len);
+  if (write(sockfd, cmd, sizeof(cmd)) != -1) read(sockfd, response, response_len);
+  else printf("Erro ao enviar comando ao servidor.\n");
+  return response;
 }
 
 char** get_available_commands(int sockfd) {
   char *listcmds_response = post(sockfd, "listcmds");
   int n_cmds = atoi(&listcmds_response[0]);
-  return split(listcmds_response, " ", n_cmds);
+  return split(listcmds_response, " ", n_cmds+1);
 }
 
 int main() {
@@ -82,9 +69,13 @@ int main() {
   int n_cmds = atoi(available_cmds[0]);
   available_cmds = available_cmds+1; // slice do primeiro elemento, que eh n
 
+  printf("Comandos disponíveis: ");
+  for (int i = 0; i < n_cmds; i++) printf("%s ", available_cmds[i]);
+
   char **input;
   char *response;
   while (1) {
+    printf("\n>> ");
     input = read_from_ui(INPUT_MAX, MAX_WORDS);
 
     if (str_in_array(input[0], available_cmds, n_cmds)) {
@@ -98,6 +89,7 @@ int main() {
 
   for (int i = 0; i < MAX_WORDS; i++) free(input[i]);
   free(input);
+  free(response);
   close(sockfd);
 	exit(0);
 }

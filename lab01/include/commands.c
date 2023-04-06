@@ -20,10 +20,7 @@ char *available_commands[] = {
 int n_available_commands = sizeof(available_commands) / sizeof(char*);
 
 char* commands(char *request) {
-    printf("commands\n");
     char **splitted_req = split(request, " ", 3);
-    for (int i = 0; i < 3; i++) printf("%s ", splitted_req[i]);
-    printf("commands 2\n");
     char *response;
     if (strcmp(splitted_req[0], LISTCMDS) == 0) response = listcmds();
     else if (strcmp(splitted_req[0], DOCS) == 0) response = docs();
@@ -35,7 +32,11 @@ char* commands(char *request) {
 }
 
 char* listcmds() {
-    char *response;
+    int response_size = 0;
+    for (int i = 0; i < n_available_commands; i++) {
+        response_size += strlen(available_commands[i]) + 2;
+    }
+    char *response = (char*) malloc(sizeof(char) * response_size);
     sprintf(response, "%d", n_available_commands);
     strcat(response, " ");
     strcat(response, expand(available_commands, " ", n_available_commands));
