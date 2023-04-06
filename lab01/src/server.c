@@ -10,8 +10,9 @@
 #include <string.h>
 #include "common.h"
 #include "commands.h"
+#include "storage.h"
 
-#define MAX_CLIENTS 10
+#define MAX_CLIENTS 5
 #define BUFFER_IN_SIZE 512
 #define SERVER_PORT 9734
 
@@ -42,7 +43,7 @@ int start_server() {
   server_address.sin_addr.s_addr = htonl(INADDR_ANY);
   server_address.sin_port = htons(SERVER_PORT);
   bind(server_sockfd, (struct sockaddr *)&server_address, sizeof(server_address));
-	listen(server_sockfd, 5);
+	listen(server_sockfd, 0);
   printf("Servidor iniciou na porta %d.\n", SERVER_PORT);
   return server_sockfd;
 }
@@ -77,9 +78,6 @@ void *listen_socket(void *arg) {
     if (n_active_sockets < MAX_CLIENTS) {
       client_sockfd = accept_new_socket(server_sockfd);
       pthread_create(&sockets_thread_pool[n_active_sockets-1], NULL, args.f_handle_socket_connection, (void *) &client_sockfd);
-    } else {
-      printf("\nNúmero máximo de conexões alcançado.\n");
-      printf("Conexões ativas: %d.\n", n_active_sockets);
     }
 	}
 }
@@ -87,16 +85,13 @@ void *listen_socket(void *arg) {
 void *handle_socket_connection(void *arg) {
   int client_sockfd = *(int *) arg;
   char buffer[BUFFER_IN_SIZE];
-  int n;
   while (1) {
-    read(client_sockfd, buffer, sizeof(buffer));
+    read(client_sockfd, buffer, BUFFER_IN_SIZE);
     printf("\nMensagem recebida de cliente no socket %d: %s\n", client_sockfd, buffer);
     char *response = commands(buffer);
     printf("Resposta: %s\n", response);
     if (response == NULL) break;
-    n = sizeof(response);
-    n = write(client_sockfd, response, sizeof(char) * strlen(response) + 1);
-    free(response);
+    write(client_sockfd, response, sizeof(char) * strlen(response) + 1);
   }
   disconnect_socket(client_sockfd);
 }
@@ -113,7 +108,8 @@ void handle_ui() {
 
 int main() {
   show_banner();
-  
+  init_storage();
+
   int server_sockfd = start_server();
   pthread_t socket_listener_thread;
   listen_socket_arg socket_listener_args = {
@@ -128,5 +124,6 @@ int main() {
     disconnect_socket(active_sockets[i]);
     pthread_cancel(sockets_thread_pool[i]);
   }
+  destroy_storage();
   return shutdown(server_sockfd, SHUT_RDWR);
 }

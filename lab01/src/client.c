@@ -40,14 +40,14 @@ int connect_to_server(const char *serv_addr, const int serv_port) {
 char* post(int sockfd, char *cmd) {
   int response_len = sizeof(char) * 1024;
   char *response = (char*) malloc(response_len);
-  if (write(sockfd, cmd, sizeof(cmd)) != -1) read(sockfd, response, response_len);
+  if (write(sockfd, cmd, sizeof(char) * strlen(cmd) + 1) != -1) read(sockfd, response, response_len);
   else printf("Erro ao enviar comando ao servidor.\n");
   return response;
 }
 
 char** get_available_commands(int sockfd) {
   char *listcmds_response = post(sockfd, "listcmds");
-  int n_cmds = atoi(&listcmds_response[0]);
+  int n_cmds = atoi(&listcmds_response[0]); // FIX: n_cmds errado se numero de comandos > 9
   return split(listcmds_response, " ", n_cmds+1);
 }
 
@@ -63,13 +63,12 @@ int main() {
     perror("Conexão com o servidor falhou!");
     exit(1);
   }
-  printf("Conectado!\n");
 
   char **available_cmds = get_available_commands(sockfd);
   int n_cmds = atoi(available_cmds[0]);
   available_cmds = available_cmds+1; // slice do primeiro elemento, que eh n
 
-  printf("Comandos disponíveis: ");
+  printf("Conectado! Comandos disponíveis: ");
   for (int i = 0; i < n_cmds; i++) printf("%s ", available_cmds[i]);
 
   char **input;

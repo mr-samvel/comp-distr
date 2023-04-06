@@ -1,5 +1,5 @@
 IDIR=./include
-_DEPS=common.c commands.c
+_DEPS=common.c commands.c storage.c
 DEPS=$(patsubst %,$(IDIR)/%,$(_DEPS))
 
 CFLAGS=-I $(IDIR) -ggdb

@@ -3,21 +3,39 @@
 #include <string.h>
 #include "commands.h"
 #include "common.h"
+#include "storage.h"
 
+#define DOCS_LISTCMDS "listcmds -> Retorna o no. de comandos e suas chamadas."
 #define LISTCMDS "listcmds"
+
+#define DOCS_DOCS "docs -> Retorna a descricao de uso dos comandos e seus retornos."
 #define DOCS "docs"
+
+#define DOCS_QUIT "quit -> Encerra a conexão com o servidor."
 #define QUIT "quit"
+
+#define DOCS_GET "get intkey -> Retorna o valor armazenado na chave intkey. Ex: get 2"
 #define GET "get"
+
+#define DOCS_PUT "put intkey strvalue -> Retorna o valor armazenado na chave intkey. Ex: put 2 string que sera armazenada"
 #define PUT "put"
 
-char *available_commands[] = {
+char *DOCS_AVAILABLE_COMMANDS[] = {
+    DOCS_LISTCMDS,
+    DOCS_DOCS,
+    DOCS_QUIT,
+    DOCS_GET,
+    DOCS_PUT
+};
+
+char *AVAILABLE_COMMANDS[] = {
     LISTCMDS,
     DOCS,
     QUIT,
     GET,
     PUT
 };
-int n_available_commands = sizeof(available_commands) / sizeof(char*);
+const int N_AVAILABLE_COMMANDS = sizeof(AVAILABLE_COMMANDS) / sizeof(char*);
 
 char* commands(char *request) {
     char **splitted_req = split(request, " ", 3);
@@ -33,18 +51,26 @@ char* commands(char *request) {
 
 char* listcmds() {
     int response_size = 0;
-    for (int i = 0; i < n_available_commands; i++) {
-        response_size += strlen(available_commands[i]) + 2;
+    for (int i = 0; i < N_AVAILABLE_COMMANDS; i++) {
+        response_size += strlen(AVAILABLE_COMMANDS[i]) + 2;
     }
     char *response = (char*) malloc(sizeof(char) * response_size);
-    sprintf(response, "%d", n_available_commands);
+    sprintf(response, "%d", N_AVAILABLE_COMMANDS);
     strcat(response, " ");
-    strcat(response, expand(available_commands, " ", n_available_commands));
+    strcat(response, expand(AVAILABLE_COMMANDS, " ", N_AVAILABLE_COMMANDS));
     return response;
 }
 
 char* docs() {
-    return NULL;
+    char *response = (char*) malloc(sizeof(char));
+    response[0] = '\0';
+    for (int i = 0; i < N_AVAILABLE_COMMANDS; i++) {
+        response = (char*) realloc(response, sizeof(char) * (strlen(response) + strlen(DOCS_AVAILABLE_COMMANDS[i])) + 2);
+        strcat(response, "\n");
+        strcat(response, DOCS_AVAILABLE_COMMANDS[i]);
+        strcat(response, "\n");
+    }
+    return response;
 }
 
 char* quit() {
@@ -52,9 +78,16 @@ char* quit() {
 }
 
 char* get(char *key) {
-    return NULL;
+    int k = atoi(key);
+    char *response = get_storage(k);
+    if (!response) response = "(null)";
+    return response;
 }
 
 char* put(char *key, char *value) {
-    return NULL;
+    int k = atoi(key);
+    char *response;
+    if (put_storage(k, value)) response = "Item adicionado com sucesso.\n";
+    else response = "Erro ao adicionar item!\n";
+    return response;
 }
