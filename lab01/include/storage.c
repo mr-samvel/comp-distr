@@ -20,12 +20,10 @@ void init_storage() {
 }
 
 char* get_storage(int key) { // essa estrategia de armazenamento eh ineficiente
-    pthread_mutex_lock(&transaction_mutex);
     for (int i = 0; i < n_storage; i++) {
         if (!storage) return NULL;
         if (storage[i].key == key) return storage[i].value;
     }
-    pthread_mutex_unlock(&transaction_mutex);
 }
 
 int put_storage(int key, char *value) { // essa estrategia de armazenamento eh ineficiente

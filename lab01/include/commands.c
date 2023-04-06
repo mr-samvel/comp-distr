@@ -87,7 +87,7 @@ char* get(char *key) {
 char* put(char *key, char *value) {
     int k = atoi(key);
     char *response;
-    if (put_storage(k, value)) response = "Item adicionado com sucesso.\n";
+    if (put_storage(k, value)) response = "Item adicionado com sucesso.";
     else response = "Erro ao adicionar item!\n";
     return response;
 }
