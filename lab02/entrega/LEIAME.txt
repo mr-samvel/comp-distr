@@ -1,0 +1,3 @@
+Para compilar e rodar:
+    para o servidor, rodar server.sh;
+    para os clientes, rodar client.sh passando 01 ou 02 como argumento. Ex. `./client.sh 01`
