@@ -1,0 +1,7 @@
+1. O acesso ao objeto remoto é sequencial ou concorrente? Você deveria se preocupar com condições de corrida na reserva das cadeiras?
+R: Concorrente. Sim, devemos nos preocupar com isso. Para tratar essa situação, criamos um vetor de cadeiras como sendo um AtomicReferenceArray, ou seja, permitindo
+que as referencias do vetor sejam atualizadas de maneira atômica.
+
+
+
+2. Imagine que há um grande número de requisições para compras de ingressos. Como você poderia aumentar a concorrência ao acesso ao objeto remoto?
