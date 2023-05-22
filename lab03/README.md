@@ -16,3 +16,4 @@ Existem 4 processos em `lab03/app/` que fazem com que isso aconteça:
 
 Para facilitar o trabalho de configuração, containerizamos a aplicação, portanto basta ter instalado o Docker e Docker-compose.
 Com esses requisitos atendidos, executar `docker-compose up` vai ser suficiente para levantar e configurar o broker e todos os processos para a execução do ping-pong.
+É possível monitorar os tópicos/mensagens utilizando o programa MQTT Explorer. O broker está rodando na porta 1883 e permite conexão anônima (sem usuário e senha).
