@@ -1,0 +1,19 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto
+    volumes:
+      - ./mosquitto:/mosquitto/config
+    user: 1000:1000
+    ports:
+      - 1883:1883
+      - 9001:9001
+
+  ping-pong:
+    depends_on:
+      - mosquitto
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: /bin/sh -c './run.sh'

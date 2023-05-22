@@ -1,0 +1,1 @@
+explicar como funciona e passo a passo
