@@ -7,16 +7,16 @@ class MessageType(EnumMeta):
 
 @dataclass
 class Message:
-    lc: int  # identifier
+    clock: int  # identificador
     msg_type: MessageType
-    sender: int
+    sender_id: int
     msg_text: str = None
-    acks: list = field(default_factory=set)  # internal use, for queue
+    acks: list = field(default_factory=set)
 
     def __repr__(self) -> str:
-        return f"{self.lc};{self.msg_type};{self.sender};{self.msg_text}"
+        return f"{self.clock};{self.msg_type};{self.sender_id};{self.msg_text}"
 
     @classmethod
-    def from_string(cls, msg_str):
-        lc, msg_type, sender, msg_text = msg_str.split(";")
-        return cls(lc=float(lc), msg_type=msg_type, sender=int(sender), msg_text=msg_text)
+    def from_string(cls, msg: str):
+        clock, msg_type, sender, msg_text = msg.split(";")
+        return cls(clock=float(clock), msg_type=msg_type, sender=int(sender), msg_text=msg_text)

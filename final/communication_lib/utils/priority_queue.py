@@ -1,28 +1,27 @@
-from message import Message
+from typing import List, Tuple, Union
+from .message import Message
 
-class PriorityQueue:
+class MessagePriorityQueue:
     # using list
     def __init__(self, max_size=100):
-        self.heap = []
+        self.heap: List[Message] = []
 
-    def find_by_lc(self, lc):
-        # find a message by its Lamport Clock
+    def find_by_clock(self, clock) -> Message:
         for msg in self.heap:
-            if msg.lc == lc:
+            if msg.clock == clock:
                 return msg
 
-    def push(self, msg: Message):
+    def push(self, msg: Message) -> None:
         self.heap.append(msg)
-        self.heap.sort(key=lambda x: x.lc, reverse=True)  # smallest at the end
+        self.heap.sort(key=lambda x: x.clock, reverse=True)  # smallest at the end
 
-    def pop(self):
+    def pop(self) -> Message:
         msg = self.heap.pop()
         return msg
 
-    def get_stats(self):
-        # list of (lc, acks)
-        return [(msg.lc, msg.acks) for msg in self.heap]
+    def get_stats(self) -> List[Tuple[int, list]]:
+        return [(msg.clock, msg.acks) for msg in self.heap]
 
     @property
-    def top(self):
+    def top(self) -> Union[Message, None]:
         return self.heap[-1] if self.heap else None

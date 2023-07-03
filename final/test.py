@@ -17,7 +17,7 @@ delivered = {i: [] for i in addr_map}
 def exit_gracefully():
     for node in nodes.values():
         try:
-            node.conn_handler.close()
+            node.exit()
         except Exception as e:
             pass
     sys.exit(0)
@@ -25,8 +25,8 @@ def exit_gracefully():
 def run(node_id):
     for i in range(1, 11):
         time.sleep(random.uniform(1, 5))
-        msg = f"message-{i} from node-{node_id}"
-        nodes[node_id].broadcast_message(msg)
+        msg = f"Mensagem-{i} do Nodo-{node_id}"
+        nodes[node_id].broadcast(msg)
 
 def test_ordered_delivery():
     with ThreadPoolExecutor(max_workers=n_nodes) as executor:
