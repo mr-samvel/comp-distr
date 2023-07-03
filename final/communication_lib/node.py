@@ -1,15 +1,14 @@
 from typing import Callable, Optional
-from connection_handler import ConnectionHandler
+from _connection_handler import ConnectionHandler
 from utils.priority_queue import PriorityQueue
 from utils.message import MessageType, Message
 from threading import Lock
 
-
 class NetworkNode:
-    def __init__(self, id, addr_map, delivery_handler: Callable):
+    def __init__(self, id, addr_map, on_deliver_callback: Callable):
         self.id = id
         self.all_nodes = list(addr_map.keys())
-        self.delivery_handler = delivery_handler
+        self.on_deliver_cb = on_deliver_callback
         self.conn_handler = ConnectionHandler(id, addr_map, handle_read=self.receive_message)
 
         self.lc = float(f"0.{id}")
@@ -60,7 +59,7 @@ class NetworkNode:
                 if len(top.acks) == len(self.all_nodes):
                     msg = self.priority_queue.pop()
                     print(f"node-{self.id} : Delivering message with LC : {msg.lc}")
-                    self.delivery_handler(self, msg.msg_text)
+                    self.on_deliver_cb(self, msg.msg_text)
                 else:
                     keep_going = False
             else:
