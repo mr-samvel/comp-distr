@@ -1,33 +1,36 @@
 import socket
 import json
 
-class CommunicationLib:
+class CausalOrdering:
     def __init__(self, process_id, processes):
         self.process_id = process_id
         self.processes = processes
         self.timestamps = {p: 0 for p in processes}
         self.pending_messages = []
+        self.sequence_number = 0
 
     def send(self, message, destination):
         timestamp = self.increment_timestamp()
-        self.pending_messages.append((timestamp, message, destination))
+        self.pending_messages.append((timestamp, self.sequence_number, message, destination))
         self.broadcast_pending_messages()
+        self.sequence_number += 1
 
     def receive(self, message):
-        timestamp, sender = message['timestamp'], message['sender']
+        timestamp, sender, sequence_number = message['timestamp'], message['sender'], message['sequence_number']
         self.timestamps[sender] = max(self.timestamps[sender], timestamp) + 1
-        self.pending_messages.append((timestamp, message, None))
+        self.pending_messages.append((timestamp, sequence_number, message, None))
         self.broadcast_pending_messages()
 
     def broadcast(self, message):
         timestamp = self.increment_timestamp()
-        self.pending_messages.append((timestamp, message, None))
+        self.pending_messages.append((timestamp, self.sequence_number, message, None))
+        self.sequence_number += 1
         self.broadcast_pending_messages()
 
     def deliver(self):
-        self.pending_messages.sort(key=lambda x: x[0])
+        self.pending_messages.sort(key=lambda x: (x[0], x[1]))
         delivered_messages = []
-        for _, message, destination in self.pending_messages:
+        for _, _, message, destination in self.pending_messages:
             if destination is None or destination == self.process_id:
                 delivered_messages.append(message)
         self.pending_messages = []
@@ -46,10 +49,11 @@ class CommunicationLib:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             try:
                 sock.connect(('localhost', destination))
-                for _, message, _ in self.pending_messages:
+                for _, _, message, _ in self.pending_messages:
                     data = {
                         'timestamp': self.timestamps[self.process_id],
                         'sender': self.process_id,
+                        'sequence_number': self.sequence_number,
                         'message': message
                     }
                     sock.sendall(json.dumps(data).encode())
